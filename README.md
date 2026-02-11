@@ -141,7 +141,7 @@ LOGIN bob password
 # Terminal 1 (Alice)
 LOGIN alice pass
 /join lobby
-Hello!
+Hello
 
 # Terminal 2 (Bob)
 LOGIN bob pass

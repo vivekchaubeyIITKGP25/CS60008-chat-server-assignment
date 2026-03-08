@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: chat_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - chat_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  chat_server_1:
+    build: .
+    container_name: chat_server_1
+    ports:
+      - "9999:9999"
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=9999
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - USE_TLS=true
+      - CERT_FILE=server.crt
+      - KEY_FILE=server.key
+      - SERVER_ID=server_1
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - chat_network
+    restart: unless-stopped
+
+  chat_server_2:
+    build: .
+    container_name: chat_server_2
+    ports:
+      - "9998:9999"
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=9999
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - USE_TLS=true
+      - CERT_FILE=server.crt
+      - KEY_FILE=server.key
+      - SERVER_ID=server_2
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - chat_network
+    restart: unless-stopped
+
+networks:
+  chat_network:
+    driver: bridge
